@@ -3,6 +3,8 @@ from xing.utils import get_logger
 from xing.utils.save_result import save_result
 logger = get_logger()
 
+MAX_PLG_BRUTE_ERROR_CNT = 30
+
 
 class BruteRunner(BaseThread):
     def __init__(self, plg,  target, username_list, password_list, concurrency=6):
@@ -23,12 +25,25 @@ class BruteRunner(BaseThread):
             logger.debug("password is founded , skip {}".format(user))
             return
 
-        result = self.plg.login(self.target, user=user, passwd=pwd)
-        if result:
-            logger.success("found weak pass {}:{} {}".format(user, pwd, self.target))
-            msg = "{}----{}:{}".format(self.target, user, pwd)
-            save_result(self.plg, msg)
-            self.result_map[user] = pwd
+        plg_error_cnt = getattr(self.plg, "_error_cnt", 0)
+        if plg_error_cnt >= MAX_PLG_BRUTE_ERROR_CNT:
+            logger.debug("plg_error_cnt >= {}, skip {}".format(MAX_PLG_BRUTE_ERROR_CNT, self.target))
+            return
+
+        try:
+            result = self.plg.login(self.target, user=user, passwd=pwd)
+            if result:
+                logger.success("found weak pass {}:{} {}".format(user, pwd, self.target))
+                msg = "{}----{}:{}".format(self.target, user, pwd)
+                save_result(self.plg, msg)
+                self.result_map[user] = pwd
+        except Exception as e:
+            # 这里应该加个锁
+            plg_error_cnt = getattr(self.plg, "_error_cnt", 0)
+            plg_error_cnt += 1
+            setattr(self.plg, "_error_cnt", plg_error_cnt)
+            logger.warning("error on {} {}:{}".format(self.target, user, pwd))
+            raise e
 
     def run(self):
         self._run()

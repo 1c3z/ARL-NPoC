@@ -4,6 +4,8 @@ class PluginType:
     POC = "poc"
     SNIFFER = "sniffer"
     BRUTE = "brute"
+    LISTENER = "listener"
+    SHELL = "shell"
 
 
 class SchemeType:
@@ -37,6 +39,7 @@ class SchemeType:
     NFS = "nfs"
     PROXY_HTTPS = "proxy_https" #支持connect语法
     COBALT_STRIKE = 'csts'  # COBALT_STRIKE 团队服务器
+    HRPC = 'hrpc' # Hadoop Yarn RPC
 
 
 DEFAULT_PORT_SCHEME_LIST = [SchemeType.IMAP, SchemeType.LDAP,
@@ -54,3 +57,5 @@ class SubParser:
     SNIFFER = "sniffer"
     EXPLOIT = "exploit"
     BRUTE = "brute"
+    LISTENER = "listener"
+    SHELL = "shell"

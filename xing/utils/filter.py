@@ -36,9 +36,18 @@ def translate(pattern):
 
 
 def pattern_match(pattern, name):
-    pattern = "*{}*".format(pattern)
+    split_list = pattern.split(",")
+    pattern_list = []
+    for item in split_list:
+        item = item.strip()
+        if item:
+            pattern_list.append("*{}*".format(item))
+
+    if not name:
+        pattern_list.append("*")
+
     name = re.sub(r"^pid_[\d]{4}_[\d]{4}", "", name)
-    return _pattern_match([pattern], name)
+    return _pattern_match(pattern_list, name)
 
 
 def _pattern_match(patterns, name):

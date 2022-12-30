@@ -1,7 +1,10 @@
 urllib3==1.25.3
 requests==2.26.0
 lxml>=4.3.0
-colorlog==3.1.4
+colorlog==6.7.0
 requests_ntlm==1.1.0
-pycryptodomex==3.9.8
-pymongo==3.7.1
+pycryptodomex==3.16.0
+pymongo==3.13.0
+pypsrp==0.5.0
+dnslib==0.9.16
+Flask==2.0.3

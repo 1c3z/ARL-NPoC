@@ -32,6 +32,11 @@ class BaseThread(object):
             self.logger.warning("error on {}".format(url))
             self.logger.exception(e)
 
+        except BaseException as e:
+            self.logger.warning("BaseException on {}".format(url))
+            self.semaphore.release()
+            raise e
+
         self.semaphore.release()
 
     def _run(self):

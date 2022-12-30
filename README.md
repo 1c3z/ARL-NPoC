@@ -20,23 +20,23 @@ xing -h
 
 usage: xing [-h] [--version] [--quit]
             [--log {debug,info,success,warning,error}]
-            {list,scan,sniffer,exploit,brute} ...
+            {list,scan,sniffer,exploit,brute,listener} ...
 
 positional arguments:
-  {list,scan,sniffer,exploit,brute}
+  {list,scan,sniffer,exploit,brute,listener}
                         子命令
     list                显示插件
     scan                扫描
     sniffer             协议识别
     exploit             漏洞利用
     brute               弱口令爆破
+    listener            监听
 
 optional arguments:
   -h, --help            show this help message and exit
   --version, -V         show program's version number and exit
   --quit, -q            安静模式 (default: False)
-  --log {debug,info,success,warning,error}, -L {debug,info,success,warning,error
-}
+  --log {debug,info,success,warning,error}, -L {debug,info,success,warning,error}
                         日志等级 (default: info)
 ```
 

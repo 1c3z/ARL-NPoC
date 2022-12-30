@@ -118,8 +118,14 @@ pids
 logs
 results
 
+npoc_result_txt.txt
+npoc_result_json.txt
+
 npm-debug.log
 node_modules
 .env
 
 *.zip
+
+/xing/database/*.db
+config.yml

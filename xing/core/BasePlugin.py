@@ -22,6 +22,7 @@ class BasePlugin:
         self.app_name = None
         self.scheme = None
         self.vul_name = None
+        self.interact = False
 
     def verify(self, target):
         """
@@ -69,6 +70,7 @@ class BasePlugin:
             result_map[brute_ret["username"]] = brute_ret["password"]
 
         else:
+            self.logger.info("start brute {} {}".format(self.app_name, self.target))
             if not self.check_app(target=self.target):
                 return
 
@@ -173,7 +175,6 @@ class BasePlugin:
         target_info['raw_target'] = raw_target
 
         self.target = target_info['target']
-
         self._target_info = target_info
 
         return self._target_info
@@ -181,7 +182,7 @@ class BasePlugin:
     def __str__(self):
         return getattr(self, '_plugin_name', "")
 
-    def conn_target(self):
+    def conn_target(self, timeout=4):
         """
         连接到目标, 请调用后一定要手动close
         """
@@ -189,7 +190,7 @@ class BasePlugin:
         host = self.target_info["host"]
         port = self.target_info["port"]
         client = socket.socket()
-        client.settimeout(4)
+        client.settimeout(timeout)
         client.connect((host, port))
 
         return client
