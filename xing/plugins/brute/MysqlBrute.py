@@ -24,6 +24,10 @@ class Plugin(BasePlugin):
         data = client.recv(254)
 
         plugin, scramble = get_scramble(data)
+        if scramble == "":
+            self.logger.info("not found scramble {}:{} {}".format(user, passwd, target))
+            return False
+
         auth_data = get_auth_data(user_bytes, passwd_bytes, scramble, plugin)
         client.send(auth_data)
         time.sleep(0.1)
@@ -41,8 +45,14 @@ class Plugin(BasePlugin):
         self.logger.debug("recv <<< {}".format(data))
         pattern = rb'^.\x00\x00\x00.*?mysql|^.\x00\x00\x00\n|.*?MariaDB server'
         matches = re.findall(pattern, data)
+
         if not matches:
             self.logger.debug("recv <<< {}".format(data))
+            return False
+
+        plugin, scramble = get_scramble(data)
+
+        if scramble == "":
             return False
 
         check = b'is not allowed to connect'
@@ -69,18 +79,18 @@ def get_hash(password, scramble):
 
 
 def get_scramble(packet):
-    tmp = packet[15:]
-    m = re.findall(rb"\x00?([\x01-\x7F]{7,})\x00", tmp)
-
-    if len(m) > 3:
-        del m[0]
-
-    scramble = m[0] + m[1]
+    scramble, plugin = '', ''
+    try:
+        tmp = packet[15:]
+        m = re.findall(rb"\x00?([\x01-\x7F]{7,})\x00", tmp)
+        if len(m) > 3: del m[0]
+        scramble = m[0] + m[1]
+    except:
+        return '', ''
     try:
         plugin = m[2]
     except:
-        plugin = ''
-
+        pass
     return plugin, scramble
 
 

