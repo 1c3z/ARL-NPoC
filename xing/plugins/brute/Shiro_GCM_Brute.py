@@ -48,7 +48,7 @@ class Plugin(BasePlugin):
         return set_cookie
 
     def check_key(self, key):
-        payload = "rO0ABXNyADJvcmcuYXBhY2hlLnNoaXJvLnN1YmplY3QuU2ltcGxlUHJpbmNpcGFsQ29sbGVjdGlvbqh/WCXGowhKAwABTAAPcmVhbG1QcmluY2lwYWxzdAAPTGphdmEvdXRpbC9NYXA7eHBw                                                                                                              dwEAeA=="
+        payload = "rO0ABXNyADJvcmcuYXBhY2hlLnNoaXJvLnN1YmplY3QuU2ltcGxlUHJpbmNpcGFsQ29sbGVjdGlvbqh/WCXGowhKAwABTAAPcmVhbG1QcmluY2lwYWxzdAAPTGphdmEvdXRpbC9NYXA7eHBwdwEAeA=="
         data = shiro_gcm(key, payload).decode()
         set_cookie = self.send_encrypt(data)
         count = set_cookie.count(self._check_value)
