@@ -113,6 +113,9 @@ def run(plg, target, copy_flag=True):
         setattr(obj, '_plugin_name', name)
         new_plg = obj
 
+        setattr(obj, 'password_file', getattr(plg, 'password_file'))
+        setattr(obj, 'username_file', getattr(plg, 'username_file'))
+
     new_plg.set_target(target)
     result = new_plg.run()
     if result and not should_skip_web_brute_result(new_plg):

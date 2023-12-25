@@ -90,6 +90,10 @@ class BasePlugin:
         dict_dir = os.path.join(Conf.PROJECT_DIRECTORY, "dicts")
         user_file = os.path.join(dict_dir, self.username_file)
         pwd_file = os.path.join(dict_dir, self.password_file)
+
+        self.logger.debug("username_file -> {}".format(self.username_file))
+        self.logger.debug("password_file -> {}".format(self.password_file))
+
         user = load_file(user_file)
 
         """获取确定的用户名密码"""
